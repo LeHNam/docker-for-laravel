@@ -1,0 +1,44 @@
+version: '3'
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - ./mysql:/docker-entrypoint-initdb.d
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 'rootpass'
+      
+  web:
+    build: ./docker
+    volumes:
+      - ./Shiba:/var/www/html
+    environment:
+      ENVIRONMENT: local
+      TERM:
+      DEBUG: 'true'
+      APACHE_DOCUMENT_ROOT: /var/www/html/public
+      DATABASE_HOST: 'db'
+      DATABASE_USER: 'root'
+      DATABASE_PASSWORD: 'rootpass'
+      XDEBUG_CONFIG: "
+       profiler_output_name=xdebug.out.%t
+       profiler_output_dir=/www/profile
+       profiler_enable_trigger=1
+       remote_enable=1
+       remote_handler=dbgp
+       remote_connect_back=1
+       remote_port=9000
+       default_enable=1
+       profiler_enable=0
+       remote_autostart=On
+       idekey=PHPSTORM
+       remote_host=192.168.1.56
+      "
+    depends_on:
+      - db
+    ports:
+      - "8000:80"
+      - "8080:443"
+    tty: true
+    stdin_open: true
